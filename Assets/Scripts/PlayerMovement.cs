@@ -2,113 +2,79 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(CharacterController))]
 public class PlayerMovement : MonoBehaviour
 {
-    [SerializeField] private Camera _playerCamera;
-    [SerializeField] private float _walkSpeed = 6f;
-    [SerializeField] private float _runSpeed = 12f;
-    [SerializeField] private float _jumpPower = 7f;
-    [SerializeField] private float gravity = 10f;
-    [SerializeField] private float lookSpeed = 2f;
-    [SerializeField] private float lookXLimit = 45f;
-    [SerializeField] private float defaultHeight = 2f;
-    [SerializeField] private float crouchHeight = 1f;
-    [SerializeField] private float crouchSpeed = 3f;
-    //dash parameters 
-    [SerializeField] private float dashSpeed = 20f;
-    [SerializeField] private float dashDuration = 0.2f;
-    [SerializeField] private float dashCooldown = 1f;
+    [Header("Movement Speeds")]
+    [SerializeField] private float _walkSpeed = 3.0f;
+    [SerializeField] private float _sprintMultiplier = 2.0f;
 
-    private Vector3 moveDirection = Vector3.zero;
-    private float rotationX = 0;
-    private CharacterController characterController;
+    [Header("Jump Parameters")]
+    [SerializeField] private float _jumpForce = 5.0f;
+    [SerializeField] private float _gravity = 9.81f;
 
-    private bool canMove = true;
-    //dash
-    private bool isDashing = false;
-    private float dashEndTime = 0f;
-    private float lastDashTime = -Mathf.Infinity;
+    [Header("Look Sensitivity")]
+    [SerializeField] private float _mouseSensitivity = 2.0f;
+    [SerializeField] private float _upDownRange = 80.0f;
 
+    [SerializeField] private CharacterController _characterController;
+    private Camera _mainCamera;
+    private PlayerInputHandler _inputHandler;
+    private Vector3 _currentMovement;
+    private float _verticalRotation;
 
     private void Awake()
     {
-        characterController = GetComponent<CharacterController>();
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        //_characterController = GetComponent<CharacterController>();
+        _mainCamera = Camera.main;
+        _inputHandler = PlayerInputHandler.Instance;
     }
 
     private void Update()
     {
-        Vector3 forward = transform.TransformDirection(Vector3.forward);
-        Vector3 right = transform.TransformDirection(Vector3.right);
+        HandleMovement();
+        HandleRotation();
+    }
 
-        bool isRunning = Input.GetKey(KeyCode.LeftShift);
-        float curSpeedX = canMove ? (isRunning ? _runSpeed : _walkSpeed) * Input.GetAxis("Vertical") : 0;
-        float curSpeedY = canMove ? (isRunning ? _runSpeed : _walkSpeed) * Input.GetAxis("Horizontal") : 0;
-        float movementDirectionY = moveDirection.y;
-        // Check if dashing
-        if (isDashing)
+    private void HandleMovement()
+    {
+        float speed = _walkSpeed * (_inputHandler.SprintValue > 0 ? _sprintMultiplier : 1f);
+
+        Vector3 inputDirection = new Vector3(_inputHandler.MoveInput.x, 0f, _inputHandler.MoveInput.y);
+        Vector3 worldDirection = transform.TransformDirection(inputDirection);
+        worldDirection.Normalize();
+
+        _currentMovement.x = worldDirection.x * speed;
+        _currentMovement.z = worldDirection.z * speed;
+
+        HandleJumping();
+        _characterController.Move(_currentMovement * Time.deltaTime);
+    }
+
+    private void HandleJumping()
+    {
+        Debug.Log(_characterController.isGrounded);
+        if(_characterController.isGrounded)
         {
-            characterController.Move(moveDirection * dashSpeed * Time.deltaTime);
-            if (Time.time >= dashEndTime)
+            _currentMovement.y = -0.5f;
+
+            if (_inputHandler.JumpTriggered)
             {
-                isDashing = false;
+                _currentMovement.y = _jumpForce;
             }
-            return;
-        } //
-        moveDirection = (forward * curSpeedX) + (right * curSpeedY);
-
-        if (Input.GetButton("Jump") && canMove && characterController.isGrounded)
-        {
-            moveDirection.y = _jumpPower;
         }
         else
         {
-            moveDirection.y = movementDirectionY;
-        }
-
-        if (!characterController.isGrounded)
-        {
-            moveDirection.y -= gravity * Time.deltaTime;
-        }
-
-        if (Input.GetKey(KeyCode.R) && canMove)
-        {
-            characterController.height = crouchHeight;
-            _walkSpeed = crouchSpeed;
-            _runSpeed = crouchSpeed;
-
-        }
-        else
-        {
-            characterController.height = defaultHeight;
-            _walkSpeed = 6f;
-            _runSpeed = 12f;
-        }
-
-        //
-        if (Input.GetKeyDown(KeyCode.E) && canMove && Time.time > lastDashTime + dashCooldown)
-        {
-            StartDash(forward * Input.GetAxis("Vertical") + right * Input.GetAxis("Horizontal"));
-        }
-        //
-        characterController.Move(moveDirection * Time.deltaTime);
-
-        if (canMove)
-        {
-            rotationX += -Input.GetAxis("Mouse Y") * lookSpeed;
-            rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
-            _playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
-            transform.rotation *= Quaternion.Euler(0, Input.GetAxis("Mouse X") * lookSpeed, 0);
+            _currentMovement.y -= _gravity * Time.deltaTime;
         }
     }
-    //
-    private void StartDash(Vector3 dashDirection)
+
+    private void HandleRotation()
     {
-        isDashing = true;
-        dashEndTime = Time.time + dashDuration;
-        lastDashTime = Time.time;
-        moveDirection = dashDirection.normalized;
-    }//
+        float mouseXRotation = _inputHandler.LookInput.x * _mouseSensitivity;
+        transform.Rotate(0, mouseXRotation, 0);
+
+        _verticalRotation -= _inputHandler.LookInput.y * _mouseSensitivity;
+        _verticalRotation = Mathf.Clamp(_verticalRotation, -_upDownRange, _upDownRange);
+        _mainCamera.transform.localRotation = Quaternion.Euler(_verticalRotation, 0, 0);
+    }
 }
