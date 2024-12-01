@@ -567,6 +567,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 4144970921230453477, guid: 6974999791dc8804fafee05e319aa932, type: 3}
+      propertyPath: TeleportableLayers.m_Bits
+      value: 1049215
+      objectReference: {fileID: 0}
     - target: {fileID: 4192527781604004243, guid: 6974999791dc8804fafee05e319aa932, type: 3}
       propertyPath: m_IsActive
       value: 1
