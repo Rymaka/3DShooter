@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Wall
   - Floor
+  - projectile
+  - Camera0
   layers:
   - Default
   - TransparentFX
@@ -15,6 +17,8 @@ TagManager:
   - UI
   - Player
   - 
+  - Player
+  - DynamicPose
   - 
   - 
   - 
@@ -25,10 +29,8 @@ TagManager:
   - 
   - 
   - 
-  - 
-  - 
-  - 
-  - 
+  - Grabbable
+  - Hand
   - 
   - 
   - 
