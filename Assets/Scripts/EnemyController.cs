@@ -5,8 +5,11 @@ using UnityEngine.AI;
 
 public class EnemyController : MonoBehaviour
 {
+    [Header("Enemy movement")]
     [SerializeField] private float _chaseRadius = 10f;
     [SerializeField] protected float _timeToMaxSpeed = 3f;
+
+    [Header("Enemy interactions")]
     [SerializeField] private float _attackRadius = 2f;
     [SerializeField] protected Animator _animator;
     [SerializeField] protected GameObject _player; //Change to PlayerReference

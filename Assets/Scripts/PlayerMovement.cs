@@ -18,7 +18,8 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] private CharacterController _characterController;
     private Camera _mainCamera;
-    private PlayerInputHandler _inputHandler;
+    [SerializeField] private GameObject _cameraTarget;
+    [SerializeField] private PlayerInputHandler _inputHandler;
     private Vector3 _currentMovement;
     private float _verticalRotation;
 
@@ -26,17 +27,22 @@ public class PlayerMovement : MonoBehaviour
     {
         //_characterController = GetComponent<CharacterController>();
         _mainCamera = Camera.main;
-        _inputHandler = PlayerInputHandler.Instance;
+        //_inputHandler = PlayerInputHandler.Instance;
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         HandleMovement();
+    }
+
+    private void LateUpdate()
+    {
         HandleRotation();
     }
 
     private void HandleMovement()
     {
+        Debug.Log(_inputHandler);
         float speed = _walkSpeed * (_inputHandler.SprintValue > 0 ? _sprintMultiplier : 1f);
 
         Vector3 inputDirection = new Vector3(_inputHandler.MoveInput.x, 0f, _inputHandler.MoveInput.y);
@@ -52,7 +58,6 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleJumping()
     {
-        Debug.Log(_characterController.isGrounded);
         if(_characterController.isGrounded)
         {
             _currentMovement.y = -0.5f;
@@ -70,11 +75,12 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleRotation()
     {
-        float mouseXRotation = _inputHandler.LookInput.x * _mouseSensitivity;
+        float mouseXRotation = (_inputHandler.newLookInput.x) * _mouseSensitivity;
         transform.Rotate(0, mouseXRotation, 0);
 
-        _verticalRotation -= _inputHandler.LookInput.y * _mouseSensitivity;
+        _verticalRotation -= (_inputHandler.newLookInput.y) * _mouseSensitivity;
         _verticalRotation = Mathf.Clamp(_verticalRotation, -_upDownRange, _upDownRange);
-        _mainCamera.transform.localRotation = Quaternion.Euler(_verticalRotation, 0, 0);
+        _cameraTarget.transform.localRotation = Quaternion.Euler(_verticalRotation, 0, 0);
+        Debug.Log(_inputHandler.LookInput.x);
     }
 }

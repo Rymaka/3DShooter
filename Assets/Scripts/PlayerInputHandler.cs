@@ -24,6 +24,7 @@ public class PlayerInputHandler : MonoBehaviour
 
     public Vector2 MoveInput { get; private set; }
     public Vector2 LookInput { get; private set; }
+    public Vector2 newLookInput { get; private set; }
     public float SprintValue { get; set; }
     public bool JumpTriggered { get; protected set; }
 
@@ -46,6 +47,10 @@ public class PlayerInputHandler : MonoBehaviour
         _jumpAction = _playerControls.FindActionMap(_actionMapName).FindAction(_jump);
         _sprintAction = _playerControls.FindActionMap(_actionMapName).FindAction(_sprint);
         RegisterInputActions();
+    }
+    private void Update()
+    {
+        newLookInput = LookInput.normalized;
     }
 
     void RegisterInputActions()
