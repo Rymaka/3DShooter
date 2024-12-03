@@ -5,20 +5,46 @@ using UnityEngine;
 public class MannequinController : EnemyController
 {
     [SerializeField] private GameObject _head;
-    [SerializeField] private GameObject _playerEyes;
     [SerializeField] private float _maxSpeed = 7f;
+    [SerializeField] private float _yOffset = 1f;
     [SerializeField] private float _initialSpeed = 2.5f;
     [SerializeField] private float _fastWalkSpeed = 3f;
     [SerializeField] private float _runningSpeed = 5f;
+    [SerializeField] private float _punchDistance = 1f;
+    [SerializeField] private float _legAttackDistance = 1f;
+    [SerializeField] private float _punchDamage = 10f;
+    [SerializeField] private GameObject _hand;
+    [SerializeField] private GameObject _leg;
     private float _startSpeed;
     private float _timer;
     private float _accelerationTick;
-
+    private bool _legAttack = false;
+    private bool _punch = false;
+    private HealthController _healthController;
+    private bool _damaged = false;
+    
     private void Start()
     {
         _startSpeed = _initialSpeed;
         _agent.speed = _startSpeed;
         _accelerationTick = (_maxSpeed - _initialSpeed)/_timeToMaxSpeed;
+        _healthController = _player.GetComponent<HealthController>();
+    }
+
+    protected override void Update()
+    {
+        base.Update();
+        if (_punch)
+        {
+            PunchAttack();
+            Debug.Log("punching");
+        }
+
+        if (_legAttack)
+        {
+            LegAttack();
+            Debug.Log("Leg Attack");
+        }
     }
     protected override void ChasePlayer()
     {
@@ -57,7 +83,6 @@ public class MannequinController : EnemyController
         {
             _timer += Time.deltaTime;
             _agent.speed += _accelerationTick*Time.deltaTime;
-            Debug.Log(_agent.speed);
         }
         MovingAnimationController();
     }
@@ -89,5 +114,57 @@ public class MannequinController : EnemyController
         _animator.SetBool("FastWalk", false);
         _animator.SetBool("Running", false);
     }
+
+    private void PunchAttack()
+    {
+        if ((Vector3.Distance(_hand.transform.position, new Vector3(_player.transform.position.x, _player.transform.position.y+_yOffset,_player.transform.position.z))) <= _punchDistance)
+        {
+            _healthController.TakeDamage(_punchDamage);
+            _damaged = true;
+            _punch = false;
+        }
+    }
+
+    private void LegAttack()
+    {
+        if ((Vector3.Distance(_hand.transform.position, new Vector3(_player.transform.position.x, _player.transform.position.y+_yOffset,_player.transform.position.z))) <= _legAttackDistance)
+        {
+            _healthController.TakeDamage(_punchDamage);
+            _damaged = true;
+            _legAttack = false;
+        }
+    }
+
+    public void EnablePunch()
+    {
+        _punch = true;
+    }
+
+    public void DisablePunch()
+    {
+        _punch = false;
+        if (_damaged)
+        {
+            _activated = true;
+        }
+        //TODO: disable On death
+    }
+
+    public void EnableLegAttack()
+    {
+        _legAttack = true;
+    }
+
+    public void DisableLegAttack()
+    {
+        _legAttack = false;
+        if (_damaged)
+        {
+            _activated = true;
+        }
+        //TODO: disable On death
+    }
+    
+    
     
 }

@@ -42,7 +42,6 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleMovement()
     {
-        Debug.Log(_inputHandler);
         float speed = _walkSpeed * (_inputHandler.SprintValue > 0 ? _sprintMultiplier : 1f);
 
         Vector3 inputDirection = new Vector3(_inputHandler.MoveInput.x, 0f, _inputHandler.MoveInput.y);
@@ -81,6 +80,5 @@ public class PlayerMovement : MonoBehaviour
         _verticalRotation -= (_inputHandler.newLookInput.y) * _mouseSensitivity;
         _verticalRotation = Mathf.Clamp(_verticalRotation, -_upDownRange, _upDownRange);
         _cameraTarget.transform.localRotation = Quaternion.Euler(_verticalRotation, 0, 0);
-        Debug.Log(_inputHandler.LookInput.x);
     }
 }

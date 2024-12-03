@@ -39,7 +39,10 @@ public class EnemyController : MonoBehaviour
                 {
                     if (distanceToPlayer < _attackRadius)
                     {
-                        AttackPlayer();
+                        if (!_isAttacking)
+                        {
+                            AttackPlayer();
+                        }
                     }
                     else
                     {
@@ -96,7 +99,7 @@ public class EnemyController : MonoBehaviour
     public void EndAttacking()
     {
         _isAttacking = false;
-        _activated = true;
+        //_activated = true;
     }
     
 }
